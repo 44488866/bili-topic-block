@@ -1,8 +1,12 @@
 /**
  * bili-topic-block —— DSH 插件入口（host 侧）。
  *
- * 本版本只实现 **preview 阶段**：免登录、只读、无凭据、不写文件。
- * 拉黑（block）阶段按约定在用户确认 preview 结果之后再实现。
+ * 本插件分两个阶段：
+ * - **preview**：免登录、只读、无凭据、不写文件（`bili_topic_preview`）；
+ * - **block**：用户确认后执行拉黑/撤销，凭据全部走 `ctx.credentials`（`bili_topic_block`、
+ *   `bili_topic_unblock`）。
+ *
+ * 无论哪个阶段，插件都不写文件、不落盘凭据。
  *
  * @module bili-topic-block
  */

@@ -1,0 +1,13 @@
+# 依赖与构建产物
+node_modules/
+dist/
+
+# 凭据：绝不提交
+.env
+.env.*
+!.env.example
+
+# 本地杂项
+*.log
+.DS_Store
+Thumbs.db

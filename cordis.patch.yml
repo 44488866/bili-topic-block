@@ -1,0 +1,42 @@
+# ============================================================================
+# bili-topic-block —— DSH bundle patch（挂载声明）
+# ============================================================================
+# 本文件只负责把插件插入配置树。可覆盖的 config 字段（留空即用默认值）：
+#
+#   requestTimeoutMs      20000   单次 HTTP 超时（毫秒）
+#   requestMinDelayMs      1200   请求间随机抖动下限（毫秒）
+#   requestMaxDelayMs      3500   请求间随机抖动上限（毫秒）
+#   enableKeywordSearch    true   是否额外用关键词搜索扩候选（需要 WBI + buvid）
+#   searchPages               1   每个关键词搜索页数（0–2）
+#   maxKeywords               6   最多使用几个关键词去搜索
+#   ignoreKeywords        [一批]  关键词黑名单（精确匹配，不区分大小写）。两类词会带进噪声：
+#                                 ①宽泛分类词：「解说」→LOL教学、「经典」→经典港片/儿歌、
+#                                   「LIVE」→电音节、「MV」→韩团MV合集；
+#                                 ②抽象类目词：「人文」→街拍系列、「认知」→认知玄学号、
+#                                   「社会」→时政新闻号。
+#                                 只影响关键词搜索，不影响相关推荐与标签展示；
+#                                 被跳过的词在输出 topic.ignored_keywords 回报，设 [] 即不过滤。
+#   useTitleAsKeywordFallback false 所有标签都被忽略时，是否退回用标题当关键词。
+#                                 默认否：实测长标题里的口语化短语会字面命中无关视频
+#                                 （例如命中某个游戏招式），比只用相关推荐更差。
+#   includeSourceUploader false   是否把「源视频 UP 主」也算作候选
+#   candidateMinHits          1   候选至少要命中几条视频
+#   maxCandidates            60   本次预览最多返回多少个候选
+#
+# ---- block 阶段 ----
+#   maxBlock                 50   数量硬上限（1–500），达到即停、绝不超量
+#   sessdataRef   BILIBILI_SESSDATA  SESSDATA 的凭据名（只允许字母/数字/下划线）
+#   csrfRef              BILI_JCT   bili_jct 的凭据名（写操作必需）
+#   batchSize                50   每个批量请求放几个 mid（1–50，文档上限 50）
+#   batchRestMs           60000   批次之间的休息毫秒数（只有一个批次时不触发）
+#   probeFailures          true   批量未说明原因的失败项，是否单条复探拿精确业务码
+#   maxProbes                10   单条复探次数上限（0 表示不复探）
+#   riskCooldownHintMs   600000   触发风控时建议的冷却时长，仅用于提示
+#
+# 注意：按 id 覆盖时 config 是整体替换、不会深合并，需要写全所有要改的字段。
+# ============================================================================
+
+- insert:
+    - id: bili-topic-block
+      name: bili-topic-block
+      config: {}

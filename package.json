@@ -1,0 +1,40 @@
+{
+  "name": "bili-topic-block",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DSH 插件：给一个 B 站视频链接，免登录只读识别它大概在讲什么，聚合「发过相关内容」的 UP 主候选，并在人工确认后批量拉黑（含撤销）。",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "bilibili",
+    "blacklist"
+  ],
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "lib",
+    "tools",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/44488866/bili-topic-block.git"
+  },
+  "homepage": "https://github.com/44488866/bili-topic-block#readme",
+  "bugs": {
+    "url": "https://github.com/44488866/bili-topic-block/issues"
+  },
+  "author": {
+    "name": "21414",
+    "url": "https://github.com/44488866"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "MIT"
+}

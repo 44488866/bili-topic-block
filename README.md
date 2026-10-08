@@ -34,49 +34,87 @@ DSH（DeepSeek Harness）插件：给一个 B 站视频链接，**免登录只�
 
 本插件是标准 DSH bundle（`package.json` 声明了 `dsh.bundle.patch`），**零依赖、无需构建**。
 
-### 方式 A：从 GitHub 安装（推荐）
+安装前请先确认两件事：
+
+| 前提 | 说明 |
+|---|---|
+| 本机已装 **git** | 安装 `github:` 地址前，DSH 会先跑一次 `git ls-remote` 预检（5 秒超时）。没装 git 会直接失败。 |
+| 本机能**直接访问 `github.com`** | GitHub 地址**不走 npm 镜像 / 安装源**，必须本机直连。连不上会报「无法连接 github.com」，此时需配置代理；或改填 npm 包名（若该插件已发布到 npm）。 |
+
+### 方式 A：插件页面（推荐，桌面端与网页端都适用）
+
+1. 打开 DSH → 左侧 **「插件 / Plugins」** 页面；
+2. 在安装框里填（该输入框接受「包名、GitHub 仓库地址或本地目录路径」）：
+
+   ```text
+   github:44488866/bili-topic-block
+   ```
+
+3. 点「安装」，装完按提示**重启 DSH**。
+
+### 方式 B：在对话里让 agent 装（桌面端推荐）
+
+> 帮我装插件 `github:44488866/bili-topic-block`
+
+### 方式 C：命令行（**仅适用于非 `desktop` 的 profile**）
 
 ```powershell
-# 明确指定 profile（web profile 就写 --profile web）
+# web profile 就写 --profile web
 dsh plugin --profile <profile名> add github:44488866/bili-topic-block
 ```
 
 `dsh plugin ...` 会把参数原样转发给该 profile 目录下的 pnpm，
 并自动把 `bili-topic-block` 写进该 profile 的 `dsh.profile.bundles`。
 
-> 若 `dsh` 不在 PATH 上，请用你本机安装方式对应的入口（例如 `npx @deepseek-ai/dsh`）来执行同样的命令。
+> 若 `dsh` 不在 PATH 上，请用你本机安装方式对应的入口（例如 `npx @deepseek-ai/dsh`）执行同样的命令。
 
-### 方式 B：本地开发 / 从本地克隆安装
+### ⚠️ 桌面端（Electron 客户端）不能用命令行
+
+官方桌面端读的是 **`desktop` profile**，而 `dsh plugin` 命令行**按设计拒绝**操作它：
+
+```text
+error: profile "desktop" is managed exclusively by the Electron application
+```
+
+桌面端的插件只能由客户端自己装——用**方式 A 的插件页面**或**方式 B 的会话内 agent**。
+也**不要**改用 `--profile web`：包装上了，但桌面窗口读的不是那个 profile，
+表现为"什么都没发生、也不报错"。
+
+### 方式 D：本地开发 / 从本地克隆安装
 
 ```powershell
 dsh plugin --profile <profile名> add link:D:\你的路径\bili-topic-block
 ```
 
-`link:` 是软链安装，改源码立即生效；但安装后**不能移动该目录**，移动后需重新 add。
-
-### ⚠️ 桌面端（Electron 客户端）请注意
-
-官方桌面端读的是 **`desktop` profile**，而 `dsh plugin` 命令行**按设计拒绝**操作它：
-
-```
-error: profile "desktop" is managed exclusively by the Electron application
-```
-
-所以桌面端**不要**用 `--profile web`（装完桌面窗口读不到，表现为"右下角什么都没有、
-控制台也不报错"）。正确做法是在桌面端会话里**让 DSH 自己装**——
-它的内置插件管理器作用域就是当前 profile：
-
-> 在桌面端对话里直接说：「把 `github:44488866/bili-topic-block` 装上」
-
-等价做法：把本目录放在工作区，让会话内的 agent 用 `plugin_manager` 的 `install_bundle`
-以**绝对路径**安装。
+`link:` 是软链安装，改源码立即生效；但安装后**不能移动该目录**，移动后须重新 add。
+桌面端同样不能用命令行，需在会话内让 agent 以**绝对路径**调用 `plugin_manager` 的 `install_bundle`。
 
 ### 生效方式
 
 - 新装一个 bundle 通常**热生效**（安装结果里 `application: "applied"`）；
 - **替换已安装包的代码需要重启**才能加载新的 JS 模块；
-- 判定是否真的生效，请读安装结果里的 `application` 与 `warnings`，
-  不要靠看进程列表或服务端日志。
+- 判定是否真的生效，请读安装结果里的 `application` 与 `warnings`，不要靠看进程列表或服务端日志。
+
+## 快速上手
+
+装好并**重启**之后：
+
+```text
+1) 让它分析一个视频：
+   「用 bili_topic_preview 看一下 https://www.bilibili.com/video/BVxxxxxxxxxx」
+
+2) 看返回的候选（每个带 confidence 与样例标题），挑出你确实要处理的
+   —— high 可优先采用，medium/low 必须看标题。
+
+3) 要真的拉黑时（需先配好凭据，见下文「凭据配置」）：
+   「用 bili_topic_block 拉黑 mid=xxx，先 dry_run」
+   预演通过后去掉 dry_run、带 confirm 真正执行。
+
+4) 手滑了就用 bili_topic_unblock 撤销。
+```
+
+> preview **全程免登录、不发送任何凭据**；只有 block 才读凭据，且必须显式传 `confirm`。
+> 数量受 `maxBlock` 硬上限约束，达到即停。
 
 ## 设计：预览 → 确认 → 执行
 
@@ -153,18 +191,37 @@ bili-topic-block/
 3. 找到 `SESSDATA` 这一行，**只复制它的值**（一串裸 token，**不是**整条 Cookie 头）；
 4. 同样复制 `bili_jct` 的值。
 
-#### 第二步：填进 DSH（三种方式任选其一）
+#### 第二步：填进 DSH
 
-| 方式 | 做法 |
-|---|---|
-| **凭据管理**（推荐） | 在 DSH 的凭据/账号设置里新增两条记录，名字分别为 `BILIBILI_SESSDATA`、`BILI_JCT`，值为上一步复制的内容 |
-| **环境变量** | 在启动 DSH 的环境里设置同名变量 `BILIBILI_SESSDATA` / `BILI_JCT` |
-| **`.env` 文件** | 凭据服务的来源层之一，可在 `$DSH_HOME/.env` 里写 `BILIBILI_SESSDATA=...`（注意别提交进 Git） |
+| 方式 | 做法 | 备注 |
+|---|---|---|
+| **`.env` 文件**（推荐，已实测） | 在 `$DSH_HOME/.env` 写两行：`BILIBILI_SESSDATA=<值>` 和 `BILI_JCT=<值>`（Windows 默认路径 `C:\Users\<你>\.dsh\.env`） | 文件不存在就新建；**等号两边不要空格、值不要引号**；用**无 BOM** 的 UTF-8 保存 |
+| **环境变量** | 在启动 DSH 的环境里设置同名变量 | 优先级**高于** `.env` |
+
+> **关于「凭据管理界面」**：DSH 的设置页目前只有账号 / 模型 / 联网搜索等**特定用途**的密钥入口，
+> 并没有给任意凭据名用的通用新增页。所以对 `BILIBILI_SESSDATA` / `BILI_JCT` 这类自定义名字，
+> **`.env` 是实际可行的做法。**
 
 > ⚠️ **不要把凭据写进 `cordis.patch.yml`。** 插件不从配置读密钥；
 > 配置文件会被提交、会进版本库，而凭据不该。
 
-#### 第三步：先预演，确认凭据真的可用
+#### ⚠️ 两个「改了却不生效」的坑
+
+凭据解析顺序是：**启动环境变量 → `.credentials.yaml` 存储 → `.env`**。因此：
+
+1. 如果你以前设过**同名的环境变量**，它会一直压过 `.env`，此时改文件毫无效果；
+2. `.env` 是在**启动时**被读取并灌进进程环境的，**改完必须重启 DSH**。
+
+#### 第三步：重启 DSH
+
+判断凭据到底有没有被读到，看报错就能区分：
+
+| 报错 | 含义 |
+|---|---|
+| `BILI_CREDENTIALS_MISSING` | 文件**没被读到** —— 多半是没重启 |
+| `BILI_LOGIN_REQUIRED` | 读到了，但 SESSDATA 无效或已过期 |
+
+#### 第四步：先预演，确认凭据真的可用
 
 ```text
 bili_topic_block(mids=<随便一个 mid>, confirm=true, dry_run=true)

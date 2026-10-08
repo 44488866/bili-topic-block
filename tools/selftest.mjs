@@ -207,6 +207,7 @@ test('ignoreKeywords 默认包含实测确认的宽泛词', () => {
   const settings = normalizeConfig({})
   for (const word of ['解说', '经典', 'LIVE']) assert.ok(settings.ignoreKeywords.includes(word), `缺少宽泛分类词 ${word}`)
   for (const word of ['社会', '人文', '思维', '认知']) assert.ok(settings.ignoreKeywords.includes(word), `缺少抽象类目词 ${word}`)
+  for (const word of ['原创', '生活', '情感', '女神', '剪辑', '影视剪辑', '必剪创作']) assert.ok(settings.ignoreKeywords.includes(word), `缺少标记/技法类词 ${word}`)
 })
 test('useTitleAsKeywordFallback 默认为 false 且校验类型', () => {
   assert.equal(normalizeConfig({}).useTitleAsKeywordFallback, false)
